@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shopping_list/screens/shopping_list.dart';
+import 'package:shopping_list/widgets/grocery_list.dart';
 
 void main() {
   runApp(const MyApp());
@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(
           title: Text('Your Groceries'),
         ),
-        body: ShoppingListScreen(),
+        body: GroceryList(),
       ),
     );
   }
