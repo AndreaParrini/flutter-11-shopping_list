@@ -12,6 +12,7 @@ class GroceryList extends StatefulWidget {
 
 class _GroceryListState extends State<GroceryList> {
   final List<GroceryItem> _groceryItems = [];
+
   void _addItem() async {
     final newItem = await Navigator.of(context).push<GroceryItem>(
       MaterialPageRoute(
@@ -28,8 +29,59 @@ class _GroceryListState extends State<GroceryList> {
     });
   }
 
+  void _removeItem(GroceryItem item) {
+    final groceryItemIndex = _groceryItems.indexOf(item);
+
+    setState(() {
+      _groceryItems.remove(item);
+    });
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        duration: Duration(seconds: 3),
+        content: Text('Expense deleted.'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            setState(() {
+              _groceryItems.insert(groceryItemIndex, item);
+            });
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    Widget mainContent = Center(
+      child: Text('No grocery items founds. Start adding some!'),
+    );
+
+    if (_groceryItems.isNotEmpty) {
+      mainContent = ListView.builder(
+        itemCount: _groceryItems.length,
+        itemBuilder: (ctx, index) => Dismissible(
+          background: Container(
+            color: Theme.of(context).colorScheme.error,
+          ),
+          key: ValueKey(_groceryItems[index].id),
+          onDismissed: (direction) {
+            _removeItem(_groceryItems[index]);
+          },
+          child: ListTile(
+            title: Text(_groceryItems[index].name),
+            leading: Container(
+              height: 24,
+              width: 24,
+              color: _groceryItems[index].category.color,
+            ),
+            trailing: Text(_groceryItems[index].quantity.toString()),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Your Groceries'),
@@ -40,18 +92,7 @@ class _GroceryListState extends State<GroceryList> {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: _groceryItems.length,
-        itemBuilder: (ctx, index) => ListTile(
-          title: Text(_groceryItems[index].name),
-          leading: Container(
-            height: 24,
-            width: 24,
-            color: _groceryItems[index].category.color,
-          ),
-          trailing: Text(_groceryItems[index].quantity.toString()),
-        ),
-      ),
+      body: mainContent,
     );
   }
 }
