@@ -38,7 +38,6 @@ class _GroceryListState extends State<GroceryList> {
         _error = 'Failed to fetch data, please try again';
       });
     }
-
     final Map<String, dynamic> listData = json.decode(
       response.body,
     );
@@ -80,27 +79,35 @@ class _GroceryListState extends State<GroceryList> {
     });
   }
 
-  void _removeItem(GroceryItem item) {
+  void _removeItem(GroceryItem item) async {
     final groceryItemIndex = _groceryItems.indexOf(item);
-
     setState(() {
       _groceryItems.remove(item);
     });
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        duration: Duration(seconds: 3),
-        content: Text('Expense deleted.'),
-        action: SnackBarAction(
-          label: 'Undo',
-          onPressed: () {
-            setState(() {
-              _groceryItems.insert(groceryItemIndex, item);
-            });
-          },
-        ),
-      ),
+
+    final url = Uri.https(
+      'flutter-prep-3adc6-default-rtdb.firebaseio.com',
+      'shopping-list/${item.id}.json',
     );
+
+    final response = await http.delete(url);
+
+    if (response.statusCode >= 400) {
+      // show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            duration: Duration(seconds: 3),
+            backgroundColor: Colors.red,
+            content: Text('Error'),
+          ),
+        );
+      }
+      setState(() {
+        _groceryItems.insert(groceryItemIndex, item);
+      });
+    }
   }
 
   @override
